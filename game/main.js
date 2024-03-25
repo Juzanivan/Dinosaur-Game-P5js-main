@@ -6,7 +6,7 @@ let img;
 let flagImage;
 
 function preload() {
-  this.img = loadImage("imgs/dinosaur-sprite.png");
+  this.img = loadImage("https://raw.githubusercontent.com/Juzanivan/Dinosaur-Game-P5js-main/main/imgs/dinosaur-sprite.png");
   this.game.sprite = this.img;
 }
 
