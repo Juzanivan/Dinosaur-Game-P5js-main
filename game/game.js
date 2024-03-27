@@ -1,13 +1,13 @@
 class Coin {
     constructor(){
         this.x = game.window_width + Math.floor(Math.random() * (300 - 100 + 1) + 100);
-        this.y = Math.floor(Math.random() * (300 - 100 + 1) + 300);
-        this.w = 24;
-        this.h = 24;
+        this.y = Math.floor(Math.random() * (300 - 100 + 1) + 250);
+        this.w = 75;
+        this.h = 75;
         this.img_index = 0;
         this.imgs = [
-            game.sprite.get(1230, 2, 28, 25),
-            game.sprite.get(27, 0, 27, 60)
+            game.sprite.get(1230, 2, 40, 25),
+            game.sprite.get(1230, 34, 40, 25)
         ];
         this.img = this.imgs[this.img_index];
 
@@ -15,7 +15,7 @@ class Coin {
 
     update(speed){
         this.x -= speed;
-        if(frameCount % 10 === 0){
+        if(frameCount % 25 === 0){
             this.img_index = (this.img_index + 1) % this.imgs.length;
             this.img = this.imgs[this.img_index];
         }
@@ -42,6 +42,9 @@ class Game {
     imgGameOver;
     imgGameOverNight;
     coins = [];
+    lastCoinSpawnTime = 0; // Le temps écoulé depuis la dernière pièce générée
+    coinSpawnInterval = 2000; // Interval en millisecondes (5000 ms = 5 s)
+    objPieces = 5; // Objectif de pièces à collecter
 
     constructor(start, debugged){
         this.started = start;
@@ -59,6 +62,7 @@ class Game {
 
     update(){
         if(this.player.isAlive() && this.started){
+            const currentTime = millis();
             if(Math.floor(this.score)%1000==0 && Math.floor(this.score)>this.last_day_change){
                 this.last_day_change = Math.floor(this.score);
                 this.night=!this.night;
@@ -66,7 +70,7 @@ class Game {
                     this.moon.changePhase();
                 }
             }
-            this.score += 1*(this.speed/70);
+            // this.score += 1*(this.speed/70);
             this.ground.update(Math.floor(this.speed));
             this.player.update();
 
@@ -105,10 +109,10 @@ class Game {
             else{
                 fill(32, 33, 36);
             }
-            text("Score",width/2+50,50);
-            text(Math.floor(this.score),width/2+150,50);
+            // Import the 'text' function from the p5.js library
+            text("Pieces: " + Math.floor(this.score) + " / " + this.objPieces, width/2+50, 50);
 
-            if(this.highScore < this.score){
+            if (this.highScore < Math.floor(this.score)) {
                 this.highScore = Math.floor(this.score);
             }
 
@@ -122,13 +126,17 @@ class Game {
             if(this.speed<this.maxSpeed){
                 this.speed += 0.001;
             }
+            if (currentTime - this.lastCoinSpawnTime >= this.coinSpawnInterval) {
+                this.spawn_coin();
+                this.lastCoinSpawnTime = currentTime; // Réinitialiser le timer
+            }
         }
         else{
             this.started = false;
             this.player.doInitialJump();
             textSize(32);
             fill(32, 33, 36);
-            text("Presiona la barra espaciadora para jugar",205,585);
+            text("Pressez la barre Espace pour commencer",205,585);
         }
 
         if(this.fpsVisible){
@@ -136,7 +144,6 @@ class Game {
             text(parseFloat(frameRate()).toFixed(3),120,50);
         }
         this.update_coins();
-        this.spawn_coin();
     }
 
     display(){
@@ -217,7 +224,7 @@ class Game {
 
     spawn_enemy(){
         if(Math.floor(random(10))==0){
-            if(this.score>450){
+            if(this.score>5){
                 this.birds.push(new Bird());
             }
         }
@@ -332,9 +339,14 @@ class Game {
                     this.player.x + this.player.w > coin.x &&
                     this.player.y < coin.y + coin.h &&
                     this.player.y + this.player.h > coin.y) {
-                    // Coin collected
-                    this.score += 10; // Increase score
-                    this.coins.splice(i, 1); // Remove the collected coin
+                    this.score += 1; // Incrémenter le score pour chaque pièce collectée
+                    this.coins.splice(i, 1); // Supprimer la pièce collectée
+            
+                    if (this.score >= this.objPieces) {
+                        this.objPieces += 5;
+                        this.score = 0;
+                        this.speed *= 1.25;
+                    }
                 }
             }
         }
@@ -420,6 +432,22 @@ class Game {
                     }
                 }
             }
+            for (let i = this.coins.length - 1; i >= 0; i--) {
+                let coin = this.coins[i];
+                if (this.player.x < coin.x + coin.w &&
+                    this.player.x + this.player.w > coin.x &&
+                    this.player.y < coin.y + coin.h &&
+                    this.player.y + this.player.h > coin.y) {
+                    this.score += 1; // Incrémenter le score pour chaque pièce collectée
+                    this.coins.splice(i, 1); // Supprimer la pièce collectée
+            
+                    if (this.score >= 5) {
+                        // Ici, vous pouvez gérer ce qui se passe quand le joueur atteint 5 pièces
+                        console.log("Objectif atteint !");
+                        // Par exemple, arrêter le jeu, afficher un message, etc.
+                    }
+                }
+            }
         }
     }
 
@@ -463,9 +491,7 @@ class Game {
     }
     // Method to spawn coins
     spawn_coin() {
-        if (Math.floor(Math.random() * 5) === 0 && this.started) {
-            this.coins.push(new Coin());
-        }
+        this.coins.push(new Coin());
     }
 
     // Method to update and despawn coins

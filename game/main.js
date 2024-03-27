@@ -45,7 +45,7 @@ function draw(){
 
   if(this.game.started){
     this.game.despawn_entities();
-    if(millis() - this.every_sec > 1000 && this.game.score>=30){
+    if(millis() - this.every_sec > 1000 && this.game.score>=1){
       this.every_sec = millis();
       this.game.spawn_entities();
     }
