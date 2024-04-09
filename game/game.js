@@ -45,6 +45,7 @@ class Game {
     lastCoinSpawnTime = 0; // Le temps écoulé depuis la dernière pièce générée
     coinSpawnInterval = 2000; // Interval en millisecondes (5000 ms = 5 s)
     objPieces = 5; // Objectif de pièces à collecter
+    pieceTotales = 0;
 
     constructor(start, debugged){
         this.started = start;
@@ -110,14 +111,15 @@ class Game {
                 fill(32, 33, 36);
             }
             // Import the 'text' function from the p5.js library
-            text("Pieces: " + Math.floor(this.score) + " / " + this.objPieces, width/2+50, 50);
+            text("Zone Suivante : " + Math.floor(this.score) + " / " + this.objPieces, width/2+-200, 50);
+            text("Drapeaux Recuperes : " + Math.floor(this.pieceTotales), width/2+140, 50);
 
-            if (this.highScore < Math.floor(this.score)) {
-                this.highScore = Math.floor(this.score);
+
+            if (this.highScore < Math.floor(this.pieceTotales)) {
+                this.highScore = Math.floor(this.pieceTotales);
             }
 
-            text("High Score",width/2+280,50);
-            text(this.highScore,width/2+460,50);
+            text("Record : " + Math.floor(this.highScore),width/2+550,50);
 
             if(!this.player.will_die){
                 this.check_collisions();
@@ -340,6 +342,7 @@ class Game {
                     this.player.y < coin.y + coin.h &&
                     this.player.y + this.player.h > coin.y) {
                     this.score += 1; // Incrémenter le score pour chaque pièce collectée
+                    this.pieceTotales += 1;
                     this.coins.splice(i, 1); // Supprimer la pièce collectée
             
                     if (this.score >= this.objPieces) {
